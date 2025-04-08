@@ -406,18 +406,27 @@ async function runIncrementalHideCheck() {
     // --- 收集需要隐藏的消息 ---
     const toHideIncrementally = [];
     const startIndex = previousVisibleStart;
-    const endIndex = Math.min(currentChatLength, targetVisibleStart); // 确保不超过当前长度
+    const endIndex = Math.min(currentChatLength, targetVisibleStart);
 
-    if (endIndex > startIndex) { // 只有当结束索引大于起始索引时才有必要检查
+    if (endIndex > startIndex) {
         console.log(`[${extensionName}] Incremental: Checking range [${startIndex}, ${endIndex}) for hiding.`);
         for (let i = startIndex; i < endIndex; i++) {
-            if (chat[i] && chat[i].is_system === false) {
+            const message = chat[i]; // 获取消息对象
+
+            // **新增日志：在检查 is_system 之前记录状态**
+            if (message) {
+                 console.log(`[${extensionName}] Incremental Pre-Check: Message ${i} - is_user: ${!!message.is_user}, is_system: ${message.is_system}`);
+            } else {
+                 console.warn(`[${extensionName}] Incremental Pre-Check: Message at index ${i} is null or undefined.`);
+                 continue; // 如果消息不存在，跳过后续检查
+            }
+
+            // 原有的检查逻辑
+            if (message.is_system === false) {
                 toHideIncrementally.push(i);
-                console.log(`[${extensionName}] Incremental: Marked message ${i} (is_user: ${!!chat[i].is_user}) for hiding.`); // 标记日志
-            } else if (chat[i] && chat[i].is_system === true) {
-                // console.log(`[${extensionName}] Incremental: Message ${i} is already hidden.`);
-            } else if (!chat[i]) {
-                 console.warn(`[${extensionName}] Incremental: Message at index ${i} is null or undefined.`);
+                console.log(`[${extensionName}] Incremental: Marked message ${i} (is_user: ${!!message.is_user}) for hiding.`);
+            } else if (message.is_system === true) {
+                console.log(`[${extensionName}] Incremental: Message ${i} (is_user: ${!!message.is_user}) was already marked as is_system=true when checked.`); // 修改日志，更明确
             }
         }
     } else {
