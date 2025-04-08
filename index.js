@@ -422,7 +422,7 @@ async function runIncrementalHideCheck() {
             }
 
             // 原有的检查逻辑
-            if (message.is_system === false) {
+            if (message.is_system !== true) {
                 toHideIncrementally.push(i);
                 console.log(`[${extensionName}] Incremental: Marked message ${i} (is_user: ${!!message.is_user}) for hiding.`);
             } else if (message.is_system === true) {
